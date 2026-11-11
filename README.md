@@ -26,7 +26,7 @@ environment. Every session in that environment starts with the following:
    CUSTOM_APPS="https://github.com/you/your_app.git#develop"    # fetched for scanning
    INSTALL_CUSTOM_APPS="no"                                     # "yes" also installs them
    rm -rf /opt/frappe-cloud-kit
-   git clone --depth 1 https://github.com/OWNER/frappe-cloud-kit /opt/frappe-cloud-kit
+   git clone --depth 1 https://github.com/akwadqa/frappe-cloud-kit /opt/frappe-cloud-kit
    source /opt/frappe-cloud-kit/setup-script.sh
    ```
 
