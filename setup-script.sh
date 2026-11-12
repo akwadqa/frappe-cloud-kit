@@ -36,13 +36,23 @@ apt-get install -y -qq curl git pkg-config build-essential libmariadb-dev redis-
 curl -fsSL https://r.mariadb.com/downloads/mariadb_repo_setup | bash -s -- --mariadb-server-version=mariadb-11.8 --skip-maxscale
 apt-get install -y -qq mariadb-server mariadb-client
 
-# 2. Node 24 via nvm and Yarn (official method). Links in /usr/local/bin make them work in every shell.
+# 2. Node 24 via nvm and Yarn (official method).
+# The cloud image ships Node 22 in /opt/node22/bin, and the session's PATH lists it before
+# /usr/local/bin (inherited from the image, and again by /etc/profile.d/nodejs.sh). Frappe v16's
+# asset build refuses Node 22, so put Node 24 ahead of it: links in ~/.local/bin (which comes
+# before /opt/node22/bin in the inherited PATH) and a profile script that runs after nodejs.sh.
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] || curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
 set +eu; . "$NVM_DIR/nvm.sh"; nvm install 24; nvm alias default 24; set -eu
 npm install -g yarn
 NODE_BIN="$(dirname "$(nvm which 24)")"
-ln -sf "$NODE_BIN"/{node,npm,npx,yarn} /usr/local/bin/
+mkdir -p "$HOME/.local/bin"
+for tool in node npm npx yarn; do
+  ln -sf "$NODE_BIN/$tool" /usr/local/bin/
+  ln -sf "$NODE_BIN/$tool" "$HOME/.local/bin/"
+done
+printf 'export PATH="%s:$PATH"\n' "$NODE_BIN" >/etc/profile.d/zz-frappe-node.sh
+"$HOME/.local/bin/node" -v | grep -q '^v24\.' || { echo "ERROR: Node 24 link is not Node 24" >&2; exit 1; }
 
 # 3. MariaDB settings Frappe expects, start it, then the mariadb-secure-installation steps
 mkdir -p /etc/mysql/mariadb.conf.d
