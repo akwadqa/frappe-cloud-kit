@@ -1,64 +1,54 @@
 # Frappe Cloud Kit
 
-A reusable setup for Claude Code cloud environments. Each new project gets its own cloud
-environment. Every session in that environment starts with the following:
+A reusable setup script for Claude Code cloud environments. Every new session starts with
+the latest **Frappe Framework v16**, with no extra apps, built to the official v16 requirements:
 
-- `/home/user/<project>-bench`, running the latest **Frappe v16** (Python 3.14, Node 24, MariaDB, Redis)
-- your chosen apps fetched and installed on the site `<project>.localhost`
-- your custom apps cloned into `apps/` so Claude can read and scan them
-- the site started automatically at `http://localhost:8000`
-- a `~/.claude/CLAUDE.md` that tells Claude where everything is
+| Dependency | Version | Installed with |
+|---|---|---|
+| OS | Debian 13+ / Ubuntu 24.04+ (checked) | — |
+| MariaDB | 11.8 | MariaDB's official repository |
+| Python | 3.14 | `uv python install 3.14 --default` |
+| Node.js | 24 | nvm v0.40.3 |
+| Yarn | 1.22+ | `npm install -g yarn` |
+| Redis | 6+ | `redis-server` |
+| pip | 25.3+ | upgraded in the bench's Python environment |
+| Chromium (PDFs) | — | `bench setup-chrome` |
+| cron | — | `cron` |
 
-## One-time setup for each new project (A, B, C, ...)
+## Setup for each environment
 
 1. In the Claude app, open the cloud environment menu in the session title bar, then
    **Add environment** (or **Edit** an existing one).
-2. **Name:** your project name, for example `project-a`.
-3. **Network access:** leave package managers allowed. The script also downloads from
-   `nodejs.org` and `github.com`.
-4. **Repositories:** select any *private* custom-app repos. Without this, the setup script
-   can't clone them.
-5. **Setup script:** paste this short loader and edit only the first lines:
+2. **Repositories:** select `akwadqa/frappe-cloud-kit` (it's private), plus any private app repos.
+3. **Setup script:** paste this loader and fill in the four values (see `.env.example`):
 
    ```bash
-   PROJECT="project-a"
-   APPS="erpnext hrms"                                          # fetched and installed
-   CUSTOM_APPS="https://github.com/you/your_app.git#develop"    # fetched for scanning
-   INSTALL_CUSTOM_APPS="no"                                     # "yes" also installs them
+   FRAPPE_BENCH_DIR="/root/frappe-bench"
+   FRAPPE_SITE="myproject.localhost"
+   FRAPPE_DB_ROOT_PASSWORD="change-me"
+   FRAPPE_ADMIN_PASSWORD="change-me"
    rm -rf /opt/frappe-cloud-kit
    git clone --depth 1 https://github.com/akwadqa/frappe-cloud-kit /opt/frappe-cloud-kit
    source /opt/frappe-cloud-kit/setup-script.sh
    ```
 
-   If this kit repo is private, also select it under **Repositories**. Every
-   environment then picks up kit updates automatically on its next session.
-   Without the repo, you can paste the whole of `setup-script.sh` and edit its
-   CONFIG defaults instead.
+   Set the values in the loader, not under Environment variables: setup scripts can't read
+   the environment's saved variables. Every environment picks up kit updates on its next session.
+   Without the repo, paste the whole of `setup-script.sh` and fill in its CONFIG block instead.
 
-6. Start a new session in that environment. Setup takes about 10–15 minutes and writes
-   its log to `/var/log/frappe-kit.log`.
+4. Start a new session.
 
-To change the apps later, edit the environment's setup script. New sessions pick up
-the change.
+## Every session
 
-## Day-to-day use
-
-- Start the server with `frappe-start`. A SessionStart hook already runs it for you.
-- To see the site:
-  - Ask Claude to show the site. Claude registers port 8000 with the Claude app, which
-    can open it in a preview pane.
-  - Or ask for screenshots: Claude drives Chromium and Playwright inside the container.
-- Log in as `Administrator` with the `ADMIN_PASSWORD` from the CONFIG block.
+- Claude runs `frappe-start` first (starts MariaDB, Redis and cron), then asks for the project
+  name and description, skills to load, apps and their repos, extra sites, and git details.
+- Claude saves those answers to `apps/<app>/CLAUDE.md` in your app repo, so later sessions skip them.
+- `frappe-new-site <name>` creates another dev site using the configured passwords.
+- Start the server with `bench start` (port 8000). Log in as `Administrator`.
+- Passwords are kept in `/root/.frappe-dev-secrets` (root-only); Claude never prints or commits them.
 
 ## What persists and what doesn't
 
-Each session is a fresh container. The **setup script** rebuilds the bench every time.
-Your **code** persists only through git, so push custom-app changes to their repos.
-Site **data** does not persist. Use fixtures in your app, or keep a backup and restore it.
-
-## Public URL (not enabled yet)
-
-A link you can open from any browser needs a tunnel service such as ngrok. The current
-network policy blocks tunnel hosts like `trycloudflare.com`. To enable one, add the
-tunnel service's domains under the environment's network settings, and store its auth
-token as an environment variable. Then ask Claude to add and test a `frappe-share` command.
+Each session is a fresh container, and the setup script rebuilds the bench every time.
+Your code persists only through git, so push app changes to their repos.
+Site data does not persist: use fixtures in your app, or keep a backup and restore it.
