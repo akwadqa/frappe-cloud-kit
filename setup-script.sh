@@ -6,7 +6,7 @@ export DEBIAN_FRONTEND=noninteractive
 
 # ===== CONFIG: fill these in. Environment variables with the same names override them. =====
 # (Cloud setup scripts can't read the environment's saved variables, so set the values here.)
-FRAPPE_BENCH_DIR="${FRAPPE_BENCH_DIR:-}"                # e.g. /root/frappe-bench
+FRAPPE_BENCH_DIR="${FRAPPE_BENCH_DIR:-}"                # e.g. /home/user/frappe-bench
 FRAPPE_SITE="${FRAPPE_SITE:-}"                          # e.g. myproject.localhost
 FRAPPE_DB_ROOT_PASSWORD="${FRAPPE_DB_ROOT_PASSWORD:-}"  # MariaDB root password
 FRAPPE_ADMIN_PASSWORD="${FRAPPE_ADMIN_PASSWORD:-}"      # site Administrator password
@@ -33,7 +33,7 @@ apt-get install -y -qq curl git pkg-config build-essential libmariadb-dev redis-
   libnss3 libatk1.0-0t64 libatk-bridge2.0-0t64 libcups2t64 libdrm2 libxkbcommon0 libxcomposite1 \
   libxdamage1 libxfixes3 libxrandr2 libgbm1 libpango-1.0-0 libcairo2 libasound2t64
 # Distro MariaDB is 10.11 on Ubuntu 24.04, so use MariaDB's official 11.8 repository
-curl -fsSL https://r.mariadb.com/downloads/mariadb_repo_setup | bash -s -- --mariadb-server-version=mariadb-11.8
+curl -fsSL https://r.mariadb.com/downloads/mariadb_repo_setup | bash -s -- --mariadb-server-version=mariadb-11.8 --skip-maxscale
 apt-get install -y -qq mariadb-server mariadb-client
 
 # 2. Node 24 via nvm and Yarn (official method). Links in /usr/local/bin make them work in every shell.
@@ -164,7 +164,8 @@ Confirm the answers in a short summary, then set up as follows (from $FRAPPE_BEN
 - Install: \`bench --site <site> install-app <app_name>\`, then \`bench --site <site> migrate\`
 - Save the project name, description, skills source and app/repo info (no passwords) to apps/<app_name>/CLAUDE.md
   and commit it, so the next session can reuse it and skip those questions.
-- Run: \`bench start\` (port 8000). Tests: \`bench --site <site> run-tests --app <app_name>\`
+- Run: \`bench start\` in the background (port 8000). Once it responds, report port 8000 with the preview-port
+  tool so the user can open the site in the Claude app's preview pane. Tests: \`bench --site <site> run-tests --app <app_name>\`
 - Mobile backend: REST at /api/resource/<DocType> and /api/method/<dotted.path>; use token auth (API key/secret).
 EOF
 touch "$HOME/.claude/CLAUDE.md"

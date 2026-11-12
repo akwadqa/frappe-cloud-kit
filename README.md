@@ -19,24 +19,30 @@ the latest **Frappe Framework v16**, with no extra apps, built to the official v
 
 1. In the Claude app, open the cloud environment menu in the session title bar, then
    **Add environment** (or **Edit** an existing one).
-2. **Repositories:** select `akwadqa/frappe-cloud-kit` (it's private), plus any private app repos.
-3. **Setup script:** paste this loader and fill in the four values (see `.env.example`):
+2. **Network access:** the setup downloads from `github.com`, `raw.githubusercontent.com` (nvm),
+   `nodejs.org`, `r.mariadb.com` and `dlm.mariadb.com` (MariaDB), and `astral.sh` (uv), plus the
+   usual package managers. If your network policy is restricted, allow these hosts.
+3. **Repositories:** this kit is public, so it doesn't need to be selected. Select only your
+   private app repos.
+4. **Setup script:** paste this loader and fill in the four values (see `.env.example`):
 
    ```bash
-   FRAPPE_BENCH_DIR="/root/frappe-bench"
+   FRAPPE_BENCH_DIR="/home/user/frappe-bench"
    FRAPPE_SITE="myproject.localhost"
    FRAPPE_DB_ROOT_PASSWORD="change-me"
    FRAPPE_ADMIN_PASSWORD="change-me"
+   export GIT_TERMINAL_PROMPT=0   # fail with an error instead of waiting for a GitHub login
    rm -rf /opt/frappe-cloud-kit
    git clone --depth 1 https://github.com/akwadqa/frappe-cloud-kit /opt/frappe-cloud-kit
    source /opt/frappe-cloud-kit/setup-script.sh
    ```
 
    Set the values in the loader, not under Environment variables: setup scripts can't read
-   the environment's saved variables. Every environment picks up kit updates on its next session.
-   Without the repo, paste the whole of `setup-script.sh` and fill in its CONFIG block instead.
+   the environment's saved variables. Keep the bench under `/home/user` so the Claude app can
+   open its files. Every environment picks up kit updates on its next session.
+   Alternatively, paste the whole of `setup-script.sh` and fill in its CONFIG block.
 
-4. Start a new session.
+5. Start a new session.
 
 ## Every session
 
@@ -44,7 +50,8 @@ the latest **Frappe Framework v16**, with no extra apps, built to the official v
   name and description, skills to load, apps and their repos, extra sites, and git details.
 - Claude saves those answers to `apps/<app>/CLAUDE.md` in your app repo, so later sessions skip them.
 - `frappe-new-site <name>` creates another dev site using the configured passwords.
-- Start the server with `bench start` (port 8000). Log in as `Administrator`.
+- Start the server with `bench start` (port 8000). Claude tells the Claude app about port 8000,
+  so you can open the site in the preview pane. Log in as `Administrator`.
 - Passwords are kept in `/root/.frappe-dev-secrets` (root-only); Claude never prints or commits them.
 
 ## What persists and what doesn't
