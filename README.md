@@ -46,16 +46,21 @@ the latest **Frappe Framework v16**, with no extra apps, built to the official v
 
 ## Every session
 
-- Claude runs `frappe-start` first (starts MariaDB, Redis and cron), then asks for the project
-  name and description, skills to load, apps and their repos, extra sites, and git details.
-- Claude saves those answers to `apps/<app>/CLAUDE.md` in your app repo, so later sessions skip them.
+- Claude runs `frappe-start` first (starts MariaDB, Redis and cron). It then reads the app repo's
+  `CLAUDE.md` and any user-level instructions, and asks only what they don't answer: the project,
+  the apps and their repos, skills to load, extra sites, and git details.
+- An app repo checked out in the session is linked into the bench (`apps/<app>`), not cloned again.
+- Claude records what it learned in the repo's `CLAUDE.md`, on a branch through your usual review,
+  so later sessions skip the questions.
 - `frappe-new-site <name>` creates another dev site using the configured passwords.
 - Start the server with `bench start` (port 8000). Claude tells the Claude app about port 8000,
-  so you can open the site in the preview pane. Log in as `Administrator`.
+  so you can open the site in the preview pane. `Administrator` is for setting up; check features as a
+  user who has only the app's roles.
 - Passwords are kept in `/root/.frappe-dev-secrets` (root-only); Claude never prints or commits them.
 
 ## What persists and what doesn't
 
 Each session is a fresh container, and the setup script rebuilds the bench every time.
 Your code persists only through git, so push app changes to their repos.
-Site data does not persist: use fixtures in your app, or keep a backup and restore it.
+Site data does not persist: seed what the app needs from its setup code (`after_install`,
+`after_migrate`) and its tests' factories, or keep a backup and restore it.
