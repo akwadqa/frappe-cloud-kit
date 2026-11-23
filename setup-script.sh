@@ -175,7 +175,8 @@ work on it. Follow them: where they differ from this file, they win. Ask the use
 answer, all in one message, and wait for the answers:
 1. Project name and description: goal, users, web app and/or mobile backend scope
 2. App(s): the app name, NEW or EXISTING, and for an existing app its repository and branch
-3. Skills to load: a local path, a git repo URL, or "none" (skip if ~/.claude/skills already has them)
+3. Skills to load: a local path, a git repo URL, or "none" (skip if the session already lists skills,
+   for example from a standards repository selected in the environment)
 4. Any extra sites beyond $FRAPPE_SITE, and any extra Frappe apps to install (default: none)
 5. The git author for commits and the branch to work on, unless the instructions name them
 Confirm the answers in a short summary, then set up as follows (from $FRAPPE_BENCH_DIR).
