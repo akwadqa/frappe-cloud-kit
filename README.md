@@ -21,7 +21,8 @@ the latest **Frappe Framework v16**, with no extra apps, built to the official v
 
 1. In the Claude app, open the cloud environment menu in the session title bar, then
    **Add environment** (or **Edit** an existing one).
-2. **Network access:** the setup downloads from `github.com`, `raw.githubusercontent.com` (nvm),
+2. **Network access:** the setup downloads from `github.com`, `codeload.github.com` (Frappe's asset
+   build fetches `frappe-ui` from it), `raw.githubusercontent.com` (nvm),
    `nodejs.org`, `r.mariadb.com` and `dlm.mariadb.com` (MariaDB), `astral.sh` (uv),
    `awscli.amazonaws.com` and `s3.amazonaws.com` (AWS tools), plus the usual package managers. If your network policy is restricted, allow these hosts.
 3. **Repositories:** this kit is public, so it doesn't need to be selected. Select only your
