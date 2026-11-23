@@ -146,37 +146,47 @@ cat >"$HOME/.claude/frappe-session.md" <<EOF
 
 Frappe Framework v16 is installed, with no apps.
 - Bench directory: $FRAPPE_BENCH_DIR
-- Default site: $FRAPPE_SITE (developer mode on). Login: Administrator.
+- Default site: $FRAPPE_SITE (developer mode on, tests allowed). Administrator is for setting up;
+  check features as a user who has only the app's roles.
 - Passwords are in /root/.frappe-dev-secrets. Never print, echo, commit or copy them anywhere;
   use \`frappe-new-site <name>\` to create sites instead of typing passwords.
 
 ## First command in every session
-Run \`frappe-start\` (starts MariaDB and Redis).
+Run \`frappe-start\` (starts MariaDB, Redis and cron).
 
-## Before doing ANY other work in a new session, ask the user for the following, all in one message, and wait for the answers:
-1. Project name
-2. Project description: goal, users, web app and/or mobile backend scope
-3. Skills to load: a local path, a git repo URL, or "none"
-4. App(s): for each one, the app name and whether it is NEW (bench new-app) or EXISTING
-5. For existing apps: the repo URL and branch
-6. Any extra sites beyond $FRAPPE_SITE, and any extra Frappe apps to install (default: none)
-7. Git author name/email for commits, and the branch to work on
-
-Skip a question only if the app repo's CLAUDE.md (or PROJECT.md) already answers it.
+## Know the project before working
+The app repository's CLAUDE.md and any other user-level instructions describe the project and how to
+work on it. Follow them: where they differ from this file, they win. Ask the user only what they don't
+answer, all in one message, and wait for the answers:
+1. Project name and description: goal, users, web app and/or mobile backend scope
+2. App(s): the app name, NEW or EXISTING, and for an existing app its repository and branch
+3. Skills to load: a local path, a git repo URL, or "none" (skip if ~/.claude/skills already has them)
+4. Any extra sites beyond $FRAPPE_SITE, and any extra Frappe apps to install (default: none)
+5. The git author for commits and the branch to work on, unless the instructions name them
 Confirm the answers in a short summary, then set up as follows (from $FRAPPE_BENCH_DIR).
 
-## Setup steps after the answers are in
-- Skills: for a git URL, clone it to ~/skills-src/<name>. For each folder that has a SKILL.md, symlink
+## Set up the app
+- Existing app whose repository is checked out in this session (for example /home/user/<repo>):
+  link the checkout into the bench instead of cloning it again:
+  \`ln -s /home/user/<repo> apps/<app_name>\`, \`./env/bin/pip install -e apps/<app_name>\`, then add
+  <app_name> to sites/apps.txt (the file may lack a final newline: add one first).
+- Existing app that is not checked out: \`bench get-app <repo-url> --branch <branch>\`.
+- New app: its repository is created on GitHub first and checked out in the session. Run
+  \`bench new-app <app_name>\`, move the generated files into the checkout so the repository root is
+  the app root, and link it as above.
+- Skills from a git URL: clone it to ~/skills-src/<name>. For each folder that has a SKILL.md, symlink
   it into ~/.claude/skills/<skill-name>. Read each SKILL.md now so it applies in this session.
-- Existing app: \`bench get-app <repo-url> --branch <branch>\`
-- New app: \`bench new-app <app_name>\`, then \`git init\` it in apps/<app_name>
 - Extra site: \`frappe-new-site <site>\`
 - Install: \`bench --site <site> install-app <app_name>\`, then \`bench --site <site> migrate\`
-- Save the project name, description, skills source and app/repo info (no passwords) to apps/<app_name>/CLAUDE.md
-  and commit it, so the next session can reuse it and skip those questions.
+- Record what you learned (project, app, repository, sites; no passwords) in the repository's
+  CLAUDE.md, on a branch and through the project's usual review, so later sessions skip the questions.
 - Run: \`bench start\` in the background (port 8000). Once it responds, report port 8000 with the preview-port
   tool so the user can open the site in the Claude app's preview pane. Tests: \`bench --site <site> run-tests --app <app_name>\`
-- Mobile backend: REST at /api/resource/<DocType> and /api/method/<dotted.path>; use token auth (API key/secret).
+- Site data does not persist between sessions: seed what the app needs from its setup code
+  (after_install, after_migrate) and its tests' factories, not from fixtures exported from a dev site.
+- Mobile or other clients: typed, whitelisted endpoints at /api/method/<dotted.path> for the app's
+  actions; /api/resource only where generic access to a DocType is intended. Machine clients use token
+  auth (API key and secret) with a user whose roles allow only what the client needs.
 EOF
 touch "$HOME/.claude/CLAUDE.md"
 grep -qF '@~/.claude/frappe-session.md' "$HOME/.claude/CLAUDE.md" ||
