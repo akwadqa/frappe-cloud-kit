@@ -139,7 +139,22 @@ bench --site "$1" set-config allow_tests true
 EOF
 chmod 755 /usr/local/bin/frappe-start /usr/local/bin/frappe-new-site
 
-# 8. Session kickoff instructions for Claude (loaded by every new session via ~/.claude/CLAUDE.md)
+# 8. Tools for reaching servers and sites. A failed download only warns, so the bench is still ready.
+#    AWS CLI v2 and the Session Manager plugin (AWS SSM sessions to servers), and frappectl (a Frappe
+#    site's REST API from the command line). Their credentials come from the environment's variables.
+command -v unzip >/dev/null || apt-get install -y -qq unzip || true
+if ! command -v aws >/dev/null; then
+  { curl -fsSL https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o /tmp/awscliv2.zip &&
+    unzip -q /tmp/awscliv2.zip -d /tmp && /tmp/aws/install && rm -rf /tmp/aws /tmp/awscliv2.zip; } ||
+    echo "WARNING: AWS CLI not installed"
+fi
+if ! command -v session-manager-plugin >/dev/null; then
+  { curl -fsSL https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb -o /tmp/smp.deb &&
+    dpkg -i /tmp/smp.deb && rm /tmp/smp.deb; } || echo "WARNING: Session Manager plugin not installed"
+fi
+uv tool install --upgrade frappectl || echo "WARNING: frappectl not installed"
+
+# 9. Session kickoff instructions for Claude (loaded by every new session via ~/.claude/CLAUDE.md)
 mkdir -p "$HOME/.claude/skills"
 cat >"$HOME/.claude/frappe-session.md" <<EOF
 # Frappe v16 dev container: session kickoff (REQUIRED)
