@@ -14,14 +14,16 @@ the latest **Frappe Framework v16**, with no extra apps, built to the official v
 | pip | 25.3+ | upgraded in the bench's Python environment |
 | Chromium (PDFs) | — | `bench setup-chrome` |
 | cron | — | `cron` |
+| AWS CLI v2 and Session Manager plugin | — | AWS's installers (for SSM sessions to servers) |
+| frappectl | — | `uv tool install frappectl` (a Frappe site's API from the command line) |
 
 ## Setup for each environment
 
 1. In the Claude app, open the cloud environment menu in the session title bar, then
    **Add environment** (or **Edit** an existing one).
 2. **Network access:** the setup downloads from `github.com`, `raw.githubusercontent.com` (nvm),
-   `nodejs.org`, `r.mariadb.com` and `dlm.mariadb.com` (MariaDB), and `astral.sh` (uv), plus the
-   usual package managers. If your network policy is restricted, allow these hosts.
+   `nodejs.org`, `r.mariadb.com` and `dlm.mariadb.com` (MariaDB), `astral.sh` (uv),
+   `awscli.amazonaws.com` and `s3.amazonaws.com` (AWS tools), plus the usual package managers. If your network policy is restricted, allow these hosts.
 3. **Repositories:** this kit is public, so it doesn't need to be selected. Select only your
    private app repos.
 4. **Setup script:** paste this loader and fill in the four values (see `.env.example`):
